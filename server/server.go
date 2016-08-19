@@ -1,9 +1,11 @@
 package server
 
 import (
-	"github.com/nulab/go-todo-example/store"
 	"encoding/json"
+	"errors"
 	"net/http"
+
+	"github.com/nulab/go-todo-example/store"
 )
 
 var ds Store = &store.Datastore{}
@@ -37,8 +39,8 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if t.Title == "" {
-		http.Error(w, "Title is missing", http.StatusBadRequest)
+	if err:= validateTask(t); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -48,4 +50,37 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+// UpdateTask handles requests for updating an existing task.
+// Return 200 if the task could be modified
+// Return 400 when JSON could not be decoded into a task or
+// datastore returned an error or task title is empty
+func UpdateTask(w http.ResponseWriter, r *http.Request) {
+
+	var t store.Task
+
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err:= validateTask(t); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := ds.SaveTask(t); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func validateTask(t store.Task) error {
+	if t.Title == "" {
+		return errors.New("Title is missing")
+	}
+	return nil
 }

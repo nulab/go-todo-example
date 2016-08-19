@@ -92,6 +92,63 @@ func TestAddTask(t *testing.T) {
 		}
 	}
 }
+
+var updateTaskTests = []struct {
+	name     string
+	saveFunc func(task store.Task) error
+	body     []byte
+	want     int
+
+}{
+	{
+		name: "should response with a status 200 OK when the task was updated",
+		body: []byte(`{"ID":1, "Title":"Buy bread for breakfast.", "Done":true }`),
+		want: http.StatusOK,
+	},
+	{
+		name: "should response with a status 400 Bad Request when JSON body could not be handle",
+		body: []byte(""),
+		want: http.StatusBadRequest,
+	},
+	{
+		name: "should response with a status 400 Bad Request when the datastore returned an error",
+		saveFunc: func(task store.Task) error {
+			return errors.New("datastore error")
+		},
+		body: []byte(`{"ID":1, "Title":"Buy bread for breakfast.", "Done":true }`),
+		want: http.StatusBadRequest,
+	},
+	{
+		name: "should response with a status 400 Bad Request when task title is emtpy",
+		body: []byte(`{"Title":""}`),
+		want: http.StatusBadRequest,
+	},
+}
+
+func TestUpdateTask(t *testing.T) {
+
+	t.Log("UpdateTask")
+
+	for _, testcase := range updateTaskTests {
+		t.Logf(testcase.name)
+
+		rec := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/tasks/1", bytes.NewBuffer(testcase.body))
+
+		defer func() { ds = &store.Datastore{} }()
+
+		ds = &mockedStore{
+			SaveTaskFunc: testcase.saveFunc,
+		}
+
+		UpdateTask(rec, req)
+
+		if rec.Code != testcase.want {
+			t.Errorf("KO => Got %d wanted %d", rec.Code, testcase.want)
+		}
+	}
+}
+
 type mockedStore struct {
 	SaveTaskFunc func(task store.Task) error
 }
