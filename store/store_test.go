@@ -9,13 +9,13 @@ func TestGetPendingTasks(t *testing.T) {
 	t.Log("GetPendingTasks")
 
 	ds := Datastore{
-		Tasks: []Task{
+		tasks: []Task{
 			{1, "Do housework", true},
 			{2, "Buy milk", false},
 		},
 	}
 
-	want := []Task{ds.Tasks[1]}
+	want := []Task{ds.tasks[1]}
 
 	t.Log("should return the tasks which need to be completed")
 
@@ -42,7 +42,7 @@ var saveTaskTests = []struct {
 	{
 		name: "should update the existing task in the store",
 		ds: &Datastore{
-			Tasks: []Task{
+			tasks: []Task{
 				{1, "Buy milk", false},
 			},
 		},
@@ -69,8 +69,8 @@ func TestSaveTask(t *testing.T) {
 			t.Errorf("=> Got %v wanted %v", err, testcase.err)
 		}
 
-		if !reflect.DeepEqual(testcase.ds.Tasks, testcase.want) {
-			t.Errorf("=> Got %v wanted %v", testcase.ds.Tasks, testcase.want)
+		if !reflect.DeepEqual(testcase.ds.tasks, testcase.want) {
+			t.Errorf("=> Got %v wanted %v", testcase.ds.tasks, testcase.want)
 		}
 	}
 }

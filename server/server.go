@@ -6,7 +6,12 @@ import (
 	"net/http"
 )
 
-var ds = &store.Datastore{}
+var ds Store = &store.Datastore{}
+
+// Store defines the datastore services
+type Store interface {
+	GetPendingTasks() []store.Task
+}
 
 // GetPendingTasks returns pending tasks as a JSON response
 func GetPendingTasks(w http.ResponseWriter, r *http.Request) {

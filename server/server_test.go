@@ -18,12 +18,10 @@ func TestGetPendingTasks(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/tasks/pending", nil)
 
-	ds = &store.Datastore{
-		Tasks: []store.Task{
-			{1, "Do housework", false},
-			{2, "Buy milk", false},
-		},
-	}
+	// The datastore is restored at the end of the test
+	defer func() { ds = &store.Datastore{} }()
+
+	ds = &mockedStore{}
 
 	GetPendingTasks(rec, req)
 
@@ -34,5 +32,14 @@ func TestGetPendingTasks(t *testing.T) {
 	want := "[{\"id\":1,\"title\":\"Do housework\",\"done\":false},{\"id\":2,\"title\":\"Buy milk\",\"done\":false}]"
 	if got := rec.Body.String(); got != want {
 		t.Errorf("KO => Got %s wanted %s", got, want)
+	}
+}
+
+type mockedStore struct{}
+
+func (ms *mockedStore) GetPendingTasks() []store.Task {
+	return []store.Task{
+		{1, "Do housework", false},
+		{2, "Buy milk", false},
 	}
 }
