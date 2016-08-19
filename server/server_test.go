@@ -36,24 +36,38 @@ func TestGetPendingTasks(t *testing.T) {
 	}
 }
 
+var addTaskTests = []struct {
+	name string
+	body []byte
+	want int
+}{
+	{
+		name: "should add new task from JSON",
+		body: []byte(`{"Title":"Buy bread for breakfast."}`),
+		want: http.StatusCreated,
+	},
+}
+
 func TestAddTask(t *testing.T) {
 
 	t.Log("AddTask")
 
-	t.Log("should add new task from JSON")
+	for _, testcase := range addTaskTests {
 
-	rec := httptest.NewRecorder()
-	req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer([]byte(`{"Title":"Buy bread for breakfast."}`)))
+		t.Log(testcase.name)
 
-	defer func() { ds = &store.Datastore{} }()
+		rec := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(testcase.body))
 
-	ds = &mockedStore{}
+		defer func() { ds = &store.Datastore{} }()
 
-	AddTask(rec, req)
+		ds = &mockedStore{}
 
-	wantCode := http.StatusCreated
-	if rec.Code != wantCode {
-		t.Errorf("KO => Got %d wanted %d", rec.Code, wantCode)
+		AddTask(rec, req)
+
+		if rec.Code != testcase.want {
+			t.Errorf("KO => Got %d wanted %d", rec.Code, testcase.want)
+		}
 	}
 }
 
