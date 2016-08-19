@@ -4,21 +4,21 @@ import "errors"
 
 // Task job to be done or completed
 type Task struct {
-	ID    int    // identifier of the task
-	Title string // Title of the task
-	Done  bool   // If task is completed or not
+	ID    int    `json:"id"`    // identifier of the task
+	Title string `json:"title"` // Title of the task
+	Done  bool   `json:"done"`  // If task is completed or not
 }
 
 // Datastore manages a list of tasks stored in memory
 type Datastore struct {
-	tasks  []Task
+	Tasks  []Task
 	lastID int // lastID is incremented for each new stored task
 }
 
 // GetPendingTasks returns all the tasks which need to be done
 func (ds *Datastore) GetPendingTasks() []Task {
 	var pendingTasks []Task
-	for _, task := range ds.tasks {
+	for _, task := range ds.Tasks {
 		if !task.Done {
 			pendingTasks = append(pendingTasks, task)
 		}
@@ -36,13 +36,13 @@ func (ds *Datastore) SaveTask(task Task) error {
 	if task.ID == 0 {
 		ds.lastID++
 		task.ID = ds.lastID
-		ds.tasks = append(ds.tasks, task)
+		ds.Tasks = append(ds.Tasks, task)
 		return nil
 	}
 
-	for i, t := range ds.tasks {
+	for i, t := range ds.Tasks {
 		if t.ID == task.ID {
-			ds.tasks[i] = task
+			ds.Tasks[i] = task
 			return nil
 		}
 	}
