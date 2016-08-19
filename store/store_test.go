@@ -1,8 +1,8 @@
 package store
 
 import (
-"reflect"
-"testing"
+	"reflect"
+	"testing"
 )
 
 func TestGetPendingTasks(t *testing.T) {
@@ -24,44 +24,43 @@ func TestGetPendingTasks(t *testing.T) {
 	}
 }
 
-func TestSaveNewTask(t *testing.T) {
-	t.Log("SaveTask")
-
-	ds := Datastore{}
-
-	task := Task{Title: "Buy milk"}
-
-	want := []Task{
-		{1, "Buy milk", false},
-	}
-
-	t.Log("should save the new task in the store")
-
-	ds.SaveTask(task)
-
-	if !reflect.DeepEqual(ds.tasks, want) {
-		t.Errorf("=> Got %v wanted %v", ds.tasks, want)
-	}
-}
-
-func TestSaveAndUpdateExistingTask(t *testing.T) {
-	t.Log("SaveTask")
-	ds := Datastore{
-		tasks: []Task{
+var saveTaskTests = []struct {
+	name string
+	ds   *Datastore
+	task Task
+	want []Task
+}{
+	{
+		name: "should save the new task in the datastore",
+		ds:   &Datastore{},
+		task: Task{Title: "Buy milk"},
+		want: []Task{
 			{1, "Buy milk", false},
 		},
-	}
+	},
+	{
+		name: "should update the existing task in the store",
+		ds: &Datastore{
+			tasks: []Task{
+				{1, "Buy milk", false},
+			},
+		},
+		task: Task{1, "Buy milk", true},
+		want: []Task{
+			{1, "Buy milk", true},
+		},
+	},
+}
 
-	want := []Task{
-		{1, "Buy milk", true},
-	}
+func TestSaveTask(t *testing.T) {
+	t.Log("SaveTask")
 
-	task := Task{1, "Buy milk", true}
+	for _, testcase := range saveTaskTests {
+		t.Log(testcase.name)
+		testcase.ds.SaveTask(testcase.task)
 
-	t.Log("should update the existing task in the store")
-	ds.SaveTask(task)
-
-	if !reflect.DeepEqual(ds.tasks, want) {
-		t.Errorf("=> Got %v wanted %v", ds.tasks, want)
+		if !reflect.DeepEqual(testcase.ds.tasks, testcase.want) {
+			t.Errorf("=> Got %v wanted %v", testcase.ds.tasks, testcase.want)
+		}
 	}
 }
