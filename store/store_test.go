@@ -23,3 +23,23 @@ func TestGetPendingTasks(t *testing.T) {
 		t.Errorf("Got %v wanted %v", got, want)
 	}
 }
+
+func TestSaveNewTask(t *testing.T) {
+	t.Log("SaveTask")
+
+	ds := Datastore{}
+
+	task := Task{Title: "Buy milk"}
+
+	want := []Task{
+		{1, "Buy milk", false},
+	}
+
+	t.Log("should save the new task in the store")
+
+	ds.SaveTask(task)
+
+	if !reflect.DeepEqual(ds.tasks, want) {
+		t.Errorf("=> Got %v wanted %v", ds.tasks, want)
+	}
+}
