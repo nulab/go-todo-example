@@ -43,3 +43,25 @@ func TestSaveNewTask(t *testing.T) {
 		t.Errorf("=> Got %v wanted %v", ds.tasks, want)
 	}
 }
+
+func TestSaveAndUpdateExistingTask(t *testing.T) {
+	t.Log("SaveTask")
+	ds := Datastore{
+		tasks: []Task{
+			{1, "Buy milk", false},
+		},
+	}
+
+	want := []Task{
+		{1, "Buy milk", true},
+	}
+
+	task := Task{1, "Buy milk", true}
+
+	t.Log("should update the existing task in the store")
+	ds.SaveTask(task)
+
+	if !reflect.DeepEqual(ds.tasks, want) {
+		t.Errorf("=> Got %v wanted %v", ds.tasks, want)
+	}
+}

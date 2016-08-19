@@ -24,9 +24,20 @@ func (ds *Datastore) GetPendingTasks() []Task {
 	return pendingTasks
 }
 
-// SaveTask should store the task in the datasore
+// SaveTask should store the task in the datastore if the task
+// does not exist else update it
 func (ds *Datastore) SaveTask(task Task) {
-	ds.lastID++
-	task.ID = ds.lastID
-	ds.tasks = append(ds.tasks, task)
+	if task.ID == 0 {
+		ds.lastID++
+		task.ID = ds.lastID
+		ds.tasks = append(ds.tasks, task)
+		return
+	}
+
+	for i, t := range ds.tasks {
+		if t.ID == task.ID {
+			ds.tasks[i] = task
+			return
+		}
+	}
 }
