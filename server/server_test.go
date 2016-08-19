@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/nulab/go-todo-example/store"
+	"bytes"
 )
 
 func TestGetPendingTasks(t *testing.T) {
@@ -32,6 +33,27 @@ func TestGetPendingTasks(t *testing.T) {
 	want := "[{\"id\":1,\"title\":\"Do housework\",\"done\":false},{\"id\":2,\"title\":\"Buy milk\",\"done\":false}]"
 	if got := rec.Body.String(); got != want {
 		t.Errorf("KO => Got %s wanted %s", got, want)
+	}
+}
+
+func TestAddTask(t *testing.T) {
+
+	t.Log("AddTask")
+
+	t.Log("should add new task from JSON")
+
+	rec := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer([]byte(`{"Title":"Buy bread for breakfast."}`)))
+
+	defer func() { ds = &store.Datastore{} }()
+
+	ds = &mockedStore{}
+
+	AddTask(rec, req)
+
+	wantCode := http.StatusCreated
+	if rec.Code != wantCode {
+		t.Errorf("KO => Got %d wanted %d", rec.Code, wantCode)
 	}
 }
 

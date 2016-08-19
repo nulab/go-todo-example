@@ -23,3 +23,13 @@ func GetPendingTasks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(j)
 }
+
+// AddTask handles POST requests on /tasks.
+// Return 201 if the task could be created
+func AddTask(w http.ResponseWriter, r *http.Request) {
+	var t store.Task
+
+	json.NewDecoder(r.Body).Decode(&t)
+
+	w.WriteHeader(http.StatusCreated)
+}
