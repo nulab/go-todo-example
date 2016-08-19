@@ -61,6 +61,11 @@ var addTaskTests = []struct {
 		body: []byte(`{"Title":"Buy bread for breakfast."}`),
 		want: http.StatusBadRequest,
 	},
+	{
+		name: "should response bad argument when task title is emtpy",
+		body: []byte(`{"Title":""}`),
+		want: http.StatusBadRequest,
+	},
 }
 
 func TestAddTask(t *testing.T) {
