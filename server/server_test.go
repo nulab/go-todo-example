@@ -1,12 +1,13 @@
 package server
 
 import (
+	"bytes"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/nulab/go-todo-example/store"
-	"bytes"
 )
 
 func TestGetPendingTasks(t *testing.T) {
@@ -37,9 +38,10 @@ func TestGetPendingTasks(t *testing.T) {
 }
 
 var addTaskTests = []struct {
-	name string
-	body []byte
-	want int
+	name     string
+	saveFunc func(task store.Task) error
+	body     []byte
+	want     int
 }{
 	{
 		name: "should add new task from JSON",
@@ -47,8 +49,16 @@ var addTaskTests = []struct {
 		want: http.StatusCreated,
 	},
 	{
-		name: "should return bad argument when JSON could not be handled",
+		name: "should response bad argument when JSON could not be handled",
 		body: []byte(""),
+		want: http.StatusBadRequest,
+	},
+	{
+		name: "should response bad argument when datastore returns an error",
+		saveFunc: func(task store.Task) error {
+			return errors.New("datastore error")
+		},
+		body: []byte(`{"Title":"Buy bread for breakfast."}`),
 		want: http.StatusBadRequest,
 	},
 }
@@ -66,7 +76,9 @@ func TestAddTask(t *testing.T) {
 
 		defer func() { ds = &store.Datastore{} }()
 
-		ds = &mockedStore{}
+		ds = &mockedStore{
+			SaveTaskFunc: testcase.saveFunc,
+		}
 
 		AddTask(rec, req)
 
@@ -75,12 +87,20 @@ func TestAddTask(t *testing.T) {
 		}
 	}
 }
-
-type mockedStore struct{}
+type mockedStore struct {
+	SaveTaskFunc func(task store.Task) error
+}
 
 func (ms *mockedStore) GetPendingTasks() []store.Task {
 	return []store.Task{
 		{1, "Do housework", false},
 		{2, "Buy milk", false},
 	}
+}
+
+func (ms *mockedStore) SaveTask(task store.Task) error {
+	if ms.SaveTaskFunc != nil {
+		return ms.SaveTaskFunc(task)
+	}
+	return nil
 }

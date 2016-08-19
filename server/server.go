@@ -11,6 +11,7 @@ var ds Store = &store.Datastore{}
 // Store defines the datastore services
 type Store interface {
 	GetPendingTasks() []store.Task
+	SaveTask(task store.Task) error
 }
 
 // GetPendingTasks returns pending tasks as a JSON response
@@ -26,11 +27,17 @@ func GetPendingTasks(w http.ResponseWriter, r *http.Request) {
 
 // AddTask handles requests for adding a new task.
 // Return 201 if the task could be created
-// Return 400 when JSON could not be decoded into a task
+// Return 400 when JSON could not be decoded into a task or
+// datastore returned an error
 func AddTask(w http.ResponseWriter, r *http.Request) {
 	var t store.Task
 
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, "JSON malformed", http.StatusBadRequest)
+		return
+	}
+
+	if err := ds.SaveTask(t); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
