@@ -29,6 +29,7 @@ var saveTaskTests = []struct {
 	ds   *Datastore
 	task Task
 	want []Task
+	err  error
 }{
 	{
 		name: "should save the new task in the datastore",
@@ -50,6 +51,12 @@ var saveTaskTests = []struct {
 			{1, "Buy milk", true},
 		},
 	},
+	{
+		name: "should return an error when task ID does not exist",
+		ds:   &Datastore{},
+		task: Task{1, "Buy milk", true},
+		err:  ErrTaskNotFound,
+	},
 }
 
 func TestSaveTask(t *testing.T) {
@@ -57,7 +64,10 @@ func TestSaveTask(t *testing.T) {
 
 	for _, testcase := range saveTaskTests {
 		t.Log(testcase.name)
-		testcase.ds.SaveTask(testcase.task)
+
+		if err := testcase.ds.SaveTask(testcase.task); err != testcase.err {
+			t.Errorf("=> Got %v wanted %v", err, testcase.err)
+		}
 
 		if !reflect.DeepEqual(testcase.ds.tasks, testcase.want) {
 			t.Errorf("=> Got %v wanted %v", testcase.ds.tasks, testcase.want)
