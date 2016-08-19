@@ -24,12 +24,16 @@ func GetPendingTasks(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-// AddTask handles POST requests on /tasks.
+// AddTask handles requests for adding a new task.
 // Return 201 if the task could be created
+// Return 400 when JSON could not be decoded into a task
 func AddTask(w http.ResponseWriter, r *http.Request) {
 	var t store.Task
 
-	json.NewDecoder(r.Body).Decode(&t)
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }

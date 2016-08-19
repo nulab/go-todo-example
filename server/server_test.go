@@ -46,6 +46,11 @@ var addTaskTests = []struct {
 		body: []byte(`{"Title":"Buy bread for breakfast."}`),
 		want: http.StatusCreated,
 	},
+	{
+		name: "should return bad argument when JSON could not be handled",
+		body: []byte(""),
+		want: http.StatusBadRequest,
+	},
 }
 
 func TestAddTask(t *testing.T) {
